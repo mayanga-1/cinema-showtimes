@@ -1,5 +1,5 @@
 // Where the API lives
-const API = 'http://localhost:3000/api/showtimes';
+const API = 'https://cinema-showtimes-api.onrender.com/api/showtimes';
 
 // Grab the page elements we need
 const form = document.getElementById('showForm');
