@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cinema Showtimes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e0e13;
+      --card: #17171f;
+      --line: #2a2a36;
+      --text: #ececf1;
+      --muted: #9a9aab;
+      --gold: #f5c518;
+      --red: #e5484d;
+      --green: #3ecf8e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      background: radial-gradient(circle at top, #1d1a2e 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header { text-align: center; padding: 3rem 1rem 2rem; }
+    header .tag { letter-spacing: .3em; color: var(--gold); font-size: .8rem; text-transform: uppercase; }
+    h1 {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-size: clamp(2.6rem, 7vw, 4.5rem);
+      letter-spacing: .05em;
+      margin: .3rem 0;
+    }
+    header p { color: var(--muted); margin: 0; }
+
+    /* Layout */
+    main { max-width: 1100px; margin: 0 auto; padding: 0 1rem 3rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1.1rem; color: var(--gold); }
+
+    /* Form */
+    form { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+    label {
+      display: flex; flex-direction: column; gap: .35rem;
+      font-size: .8rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    input {
+      background: #0f0f15;
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 8px;
+      padding: .65rem .75rem;
+      font-size: .95rem;
+      font-family: inherit;
+      color-scheme: dark;
+    }
+    input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245, 197, 24, .2); }
+    .buttons { display: flex; gap: .6rem; align-items: end; }
+
+    /* Buttons */
+    button {
+      border: none; border-radius: 8px;
+      padding: .65rem 1.1rem;
+      font-weight: 600; font-family: inherit;
+      cursor: pointer;
+      transition: transform .15s, filter .15s;
+    }
+    button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    #saveBtn { background: var(--gold); color: #111; }
+    #cancelBtn { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+    .edit { background: #2a2a36; color: var(--text); padding: .4rem .8rem; }
+    .delete { background: transparent; color: var(--red); border: 1px solid var(--red); padding: .4rem .8rem; }
+
+    /* Message */
+    #message { min-height: 1.4em; margin: 0 0 1rem; font-weight: 600; }
+    #message.ok { color: var(--green); }
+    #message.error { color: var(--red); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; padding: 0; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th {
+      text-align: left; font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted);
+      padding: 1rem; border-bottom: 1px solid var(--line);
+    }
+    td { padding: .9rem 1rem; border-bottom: 1px solid var(--line); }
+    tbody tr { transition: background .15s; }
+    tbody tr:hover { background: rgba(245, 197, 24, .05); }
+    tbody tr:last-child td { border-bottom: none; }
+    td:nth-child(2) { font-weight: 600; }               /* movie title */
+    td:nth-child(7) { color: var(--gold); font-weight: 600; } /* price */
+    td:last-child { white-space: nowrap; }              /* keep buttons on one line */
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Now Showing</div>
+    <h1>Cinema Showtimes</h1>
+    <p>Add, edit and manage this week's screenings</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Showtime details</h2>
+      <form id="showForm">
+        <input type="hidden" id="id" />
+        <label>Movie title <input id="movie_title" required /></label>
+        <label>Genre <input id="genre" /></label>
+        <label>Cinema hall <input id="cinema_hall" /></label>
+        <label>Show date <input type="date" id="show_date" /></label>
+        <label>Show time <input type="time" id="show_time" /></label>
+        <label>Ticket price (K) <input type="number" step="0.01" min="0" id="ticket_price" /></label>
+        <label>Available seats <input type="number" min="0" id="available_seats" /></label>
+        <div class="buttons">
+          <button type="submit" id="saveBtn">Add showtime</button>
+          <button type="button" id="cancelBtn" hidden>Cancel edit</button>
+        </div>
+      </form>
+    </section>
+
+    <p id="message"></p>
+
+    <section class="card table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Movie</th><th>Genre</th><th>Hall</th>
+            <th>Date</th><th>Time</th><th>Price</th><th>Seats</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
