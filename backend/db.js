@@ -1,19 +1,15 @@
 require('dotenv').config();
-const { DatabaseSync } = require('node:sqlite');
-const fs = require('fs');
-const path = require('path');
+const { Pool, types } = require('pg');
 
-// Open (or create) the database file
-const db = new DatabaseSync(path.join(__dirname, process.env.DB_FILE || 'cinema.db'));
+// Make Postgres values come back in friendly formats
+types.setTypeParser(1082, v => v);               // DATE    -> "2026-10-25"
+types.setTypeParser(1083, v => v.slice(0, 5));   // TIME    -> "14:00"
+types.setTypeParser(1700, v => parseFloat(v));   // NUMERIC -> 60 (a number)
 
-// Create the table if it doesn't exist yet
-db.exec(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
+// A pool keeps a few connections open and reuses them
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
-// If the table is empty, load the sample records
-const { n } = db.prepare('SELECT COUNT(*) AS n FROM showtimes').get();
-if (n === 0) {
-  db.exec(fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8'));
-  console.log('Sample data inserted');
-}
-
-module.exports = db;
+module.exports = pool;
